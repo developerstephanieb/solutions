@@ -1,50 +1,43 @@
-# Interview Toolkit
+# Data Structures & Algorithms Reference
 
-Personal roadmap to technical interviews in Python.
+A repository for the implementation, analysis, and optimization of fundamental computer science algorithms and data structures.
+
+---
+
+## Objectives
+
+- **Complexity Analysis**: Developing an intuitive understanding of Big O notation to predict runtime and space requirements for large inputs.
+
+- **Data Organization**: Understanding how the choice of underlying data structure (e.g., Hash Map vs. Balanced Tree) dictates the performance of an application.
+
+- **Algorithmic Paradigms**: Mastering different problem-solving approaches including Divide and Conquer, Greedy Algorithms, and Dynamic Programming.
+
+- **Optimization**: Learning to recognize bottlenecks and refactor code for optimal space-time trade-offs.
+
+---
 
 ## Repository Structure
 
 ```
-interview_toolkit/
-├── 01_data_structures/
+ref-data-structures-algorithms/
+├── linear/
 │   ├── arrays/
 │   ├── linked_lists/
+│   └── stacks_queues/
+├── non_linear/
 │   ├── trees/
 │   ├── graphs/
-│   └── stacks_queues/
-├── 02_algorithms/
-│   ├── big_o_notation/
+│   └── heaps/
+├── algorithms/
 │   ├── sorting/
 │   ├── searching/
-│   ├── dynamic_programming/
-│   └── recursion/
-├── 03_fundamentals/
-│   ├── object_oriented_programming/
-│   ├── operating_systems/
-│   └── networking/
-├── 04_databases/
-│   ├── sql/
-│   ├── nosql/
-│   ├── rdbms/
-│   └── schema-design/
-├── 05_system_design/
-│   ├── low_level_design/
-│   ├── high_level_design/
-│   └── case_studies/
-├── 06_coding_practice/
-│   ├── leetcode_solutions/
-│   ├── hackerrank_solutions/
-│   └── others/
-├── 07_behavioral_questions/
-│   ├── star_format/
-│   └── common_questions/
-├── 08_resources/
-│   ├── resume-templates/
-│   ├── books/
-│   ├── links/
-│   ├── notes/
-│   └── anki/
-├── 09_company_specific/
+│   └── dynamic_programming/
+├── complexities/
+│   └── big_o.md
+├── 06_practice/
+│   ├── leetcode/
+│   ├── hackerrank/
+│   └── company_specific/
 ├── .gitignore
 └── README.md 
 ```

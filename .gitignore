@@ -1,13 +1,18 @@
+# --- OS & Editor Configs ---
+.DS_Store
+.vscode/
+.history/
+*.swp
+*.bak
+*~
+
+# --- Virtual Environments (Python/Scripts) ---
 venv/
 env/
 .venv/
 .env/
 
-.DS_Store
+# --- Output Files ---
+*.pdf
 
-.vscode/
-.history
-
-__pycache__/
-*.py[cod]
-*$py.class
+# --- Project Specific directories ---
