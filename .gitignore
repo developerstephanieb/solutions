@@ -1,18 +1,79 @@
-# --- OS & Editor Configs ---
+# ==============================================================================
+# UNIVERSAL IGNORES (Do not edit)
+# ==============================================================================
+
+# --- macOS ---
 .DS_Store
-.vscode/
-.history/
-*.swp
-*.bak
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Linux ---
+.Desktop
 *~
 
-# --- Virtual Environments (Python/Scripts) ---
+# --- Windows ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Editor & IDE Configs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+*.sublime-workspace
+
+# --- Environments ---
 venv/
 env/
 .venv/
-.env/
+.env
+.env.*
 
-# --- Output Files ---
-*.pdf
+# --- Keys & Certs ---
+*.pem
+*.key
+*.cert
+*.crt
+id_rsa
+id_dsa
 
-# --- Project Specific directories ---
+# --- Data & Logs ---
+input.txt
+output.txt
+error.txt
+data/
+datasets/
+*.log
+*.tmp
+*.bak
+*.dat
+
+# --- Authoring & Workflow ---
+_drafts/
+_scratch/
+_templates/
+
+# ==============================================================================
+# PROJECT SPECIFIC (Uncomment or Add below)
+# ==============================================================================
+
+# --- C/C++ ---
+# *.o
+# *.out
+# *.dSYM/
+
+# --- Python ---
+# __pycache__/
+# *.pyc
+
+# --- Node ---
+# node_modules/
+
+# --- LaTeX ---
+# *.aux
+# *.pdf
+# *.fls
+# *.fdb_latexmk
