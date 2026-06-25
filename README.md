@@ -1,71 +1,57 @@
-# ref-dsa
+# solutions
 
-> **Synopsis:** A top-down reference for **Data Structures and Algorithms**. Content spans theoretical foundations and application. Part of the Ref-Series, a collection of high-signal technical documentation.
+Worked solutions to NeetCode/Leetcode problems. One problem per directory, three files
+each. This repo grows linearly with problems solved; it holds *instances*, not theory.
 
----
+## Relationship to the `ref` repo
 
-## Repository Structure
+`ref` is a single uv-workspace monorepo (members `dsa`, `python`, ...) holding durable,
+conceptual material that grows slowly. This repo holds per-problem worked examples that
+grow with practice. They cross-link; they do not merge.
 
-The repository is organized into thematic units, containing individual modules ordered by complexity.
+- **`ref/dsa`** owns the *pattern* — e.g. the note on "hashing for a seen-set with early exit."
+- **solutions** owns the *instance* — e.g. *217 Contains Duplicate, solved*.
 
-```
-ref-data-structures-algorithms/
-├── 01-analysis-framework/
-├── 02-linear-structures/
-├── 03-nonlinear-structures/
-├── 04-recursion/
-├── 05-sorting/
-├── 06-searching/
-├── 07-graph-algorithms/
-├── 08-dynamic-programming/
-├── 09-greedy-algorithms/
-├── 10-backtracking/
-├── 11-bit-manipulation/
-├── 12-string-algorithms/
-├── 98-solutions/
-├── 99-resources/
-├── .gitignore
-├── Makefile
-└── README.md
-```
+## Layout
 
-* [**01-analysis-framework**](./01-analysis-framework): RAM model, Big-O notation, Master Theorem, and correctness proofs.
-* [**02-linear-structures**](./02-linear-structures): Arrays, Linked Lists, Stacks, Queues, and Hash Tables.
-* [**03-nonlinear-structures**](./03-nonlinear-structures): BSTs, Heaps, AVL/Red-Black Trees, Tries, Union-Find, and Graph representations.
-* [**04-recursion**](./04-recursion): Stack mechanics, Tail recursion, and Divide & Conquer strategies.
-* [**05-sorting**](./05-sorting): Quadratic sorts, Merge/Quick/Heap sort, and Linear sorts (Radix/Counting).
-* [**06-searching**](./06-searching): Binary Search invariants and Selection algorithms (QuickSelect).
-* [**07-graph-algorithms**](./07-graph-algorithms): BFS/DFS, Shortest Paths (Dijkstra/Bellman-Ford), Connectivity (SCC), and MSTs.
-* [**08-dynamic-programming**](./08-dynamic-programming): Memoization/Tabulation patterns (Linear, Grid, Knapsack, Strings).
-* [**09-greedy-algorithms**](./09-greedy-algorithms): Greedy choice property, Interval Scheduling, and Huffman Coding.
-* [**10-backtracking**](./10-backtracking): State-space trees, Pruning, N-Queens, and Sudoku solvers.
-* [**11-bit-manipulation**](./11-bit-manipulation): Two's Complement, bitwise logic, and low-level optimization hacks.
-* [**12-string-algorithms**](./12-string-algorithms): Pattern matching (KMP) and Rolling Hash (Rabin-Karp).
-* [**98-solutions**](./98-solutions): Python implementations of standard problems, automatically indexed by [**Company**](./98-solutions/index-by-company.md) and [**Topic**](./98-solutions/index-by-topic.md).
-* [**99-resources**](./99-resources): Visualization scripts, badge assets, and complexity sheets.
+````
+solutions/
+├── pyproject.toml      
+├── docs/
+│   └── CONVENTIONS.md                  # Part A conventions + the per-problem template
+├── tools/
+│   └── anki_gen.py                     # builds one Anki TSV from every cards.md
+└── arrays_and_hashing/                 # category dirs are created on demand
+    └── 0217_contains_duplicate/        # <zero-padded LC number>_<snake_case slug>
+        ├── README.md                   # scope, approaches + trade-offs, testing strategy, ref/dsa link
+        ├── solution.py                 # implementations + inline `test_*` functions
+        └── cards.md                    # problem-oriented recall atoms
+````
 
----
+Category directories follow the NeetCode 150 roadmap. The canonical taxonomy and naming rules live in
+`docs/CONVENTIONS.md`.
 
-## Module Structure
+## The three files
 
-Every **topic** within a module adheres to a standardized structure.
+- **`README.md`** — scoping (constraints, assumptions, edge cases), approaches with complexity
+  and trade-offs, testing strategy, and the link up to ref/dsa. `CONVENTIONS.md` Part B is the source of truth for the structure.
+- **`solution.py`** — the implementations (typically brute force *and* optimal), each
+  paired with `test_*` functions whose `assert`s pin the behavior. Pytest collects these
+  directly; see `pyproject.toml`.
+- **`cards.md`** — distilled Q/A recall atoms for Anki, tagged in a `solutions::` namespace
+  so this deck stays separate from the concept decks.
 
-* **Definition**: A precise, formal definition of the concept.
+## Quick start
 
-* **Intuition**: The logical reasoning behind the design or algorithm.
+````
+uv sync                          # create the venv, install the dev group (mypy, pytest, ruff)
+uv run pytest                    # collect + run every test_* across all solution.py files
+uv run mypy .                    # strict type check
+uv run ruff check .              # lint (E, F, I, B, UP)
+uv run tools/anki_gen.py         # build build/anki.tsv from every cards.md
+````
 
-* **Formalism**: The core domain analysis.
+## Conventions
 
-* **Implementation**: Isolated code examples or configuration snippets.
-
----
-
-## Usage
-
-This repository includes a Makefile to automate documentation, generate assets, and audit progress.
-
-| Command       | Description                                                                   |
-| :------------ | :---------------------------------------------------------------------------- |
-| `make index`  | Scans `98-solutions/` and re-generates the **Topic** and **Company** indexes. |
-| `make stats`  | Displays a count of current units, modules, and solved problems.              |
-| `make assets` | Generates the SVG difficulty badges for offline documentation.                |
+See `docs/CONVENTIONS.md` for the category taxonomy, directory/file naming, the per-problem
+template, the cross-reference format, and the card/tag conventions.
