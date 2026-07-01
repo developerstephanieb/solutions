@@ -11,7 +11,7 @@ and `False` if every element is distinct.
 
 **Clarifying questions**
 
-- *What is the maximum length of the array? Can it be empty or a single element?* - `0 <= len <= 10**5`.
+- *What is the maximum length of the array? Can it be empty or a single element, and if so should I return False or is empty out of contract?* — `0 <= len <= 10**5`; empty and singleton are valid, and with fewer than two elements no duplicate exists, so return False (not an error).
 - *What is the value range of the integers, and are negative values permitted?* — `-10**9 <= nums[i] <= 10**9`.
 - *Am I permitted to mutate the input array, or should I treat it as read-only?* — Unspecified, so I'll treat it as read-only.
 
@@ -20,7 +20,7 @@ and `False` if every element is distinct.
 - **Memory bound (static vs streaming):** Assumes the system has sufficient RAM to allocate up to `O(n)` auxiliary space if an approach requires trading space for time.
   - Degradation: Over an unbounded stream, exact `O(n)` deduplication fails via Out of Memory (OOM) exhaustion, requiring a pivot to bounded, probabilistic structures (e.g., Bloom Filter).
 - **Hashing environment (uniform vs. adversarial):** Assumes non-adversarial input with a uniform hash distribution, permitting average `O(1)` operations for hash-based structures.
-  - Degradation: Adversarial inputs engineered to force mass collisions degrade hash operations to worst-case `O(n)`.
+  - Degradation: Adversarial inputs can mathematically exploit the hash function to map massive amounts of data into the exact same memory bucket. Whether the underlying language resolves this via separate chaining (Linked Lists) or open addressing (exhaustive probe sequences like Python), the hardware is forced to linearly scan through every collided item. This degrades the `O(1)` lookup into an `O(n)` scan. 
 
 ## 2. Algorithmic Design & Trade-offs
 
@@ -28,9 +28,7 @@ and `False` if every element is distinct.
 
 -	**Mechanics:** Iterate through all possible pairs to check for equality.
 -	**Complexity:** Time: `O(n^2)`; Space: `O(1)`
--	**Analysis:** Comparing each element sequentially against the shrinking pool of remaining elements yields an arithmetic progression summing to $\frac{n(n-1)}{2}$ comparisons, which simplifies to approximately $\frac{n^2}{2}$ pairs. At `n = 10**5`, this results in roughly $\frac{(10^5)^2}{2} = \frac{10^{10}}{2} = 5 \times 10^9$ (5 billion) operations. This guarantees a Time Limit Exceeded (TLE) error on standard hardware. Trivially correct but far too slow.
-
-To check every pair without repeating, the first element is compared to $n-1$ elements, the second to $n-2$, and so on. The sum of these comparisons is exactly $\frac{n(n-1)}{2}$, which simplifies to $\frac{n^2}{2}$ pairs. At the maximum constraint of `n = 10**5`, the algorithm executes roughly $\frac{(10^5)^2}{2} = 5 \times 10^9$ (5 billion) operations. This guarantees a Time Limit Exceeded (TLE) error on standard hardware. Trivially correct but far too slow.
+-	**Analysis:** To check every pair without repeating, the first element is compared to `n-1` elements, the second to `n-2`, and so on. These comparisons form an arithmetic progression summing to $\frac{n(n-1)}{2}$, which simplifies to approximately $\frac{n^2}{2}$ pairs. At `n = 10**5`, the algorithm executes roughly $\frac{(10^5)^2}{2} = 5 \times 10^9$ (5 billion) operations. This guarantees a Time Limit Exceeded (TLE) error on standard hardware. Trivially correct but far too slow.
 
 **Sort and scan adjacent elements**
 
@@ -42,13 +40,13 @@ To check every pair without repeating, the first element is compared to $n-1$ el
 
 - **Mechanics:** Convert the entire array into a Hash Set and compare its length to the original array's length.
 - **Complexity:** Time: `O(n)`; Space: `O(n)`
-- **Analysis:** While this achieves linear time and space, it materializes the entire set in memory. This structurally eliminates the early-exit optimization, forcing a full `O(n)` traversal and worst-case memory allocation even if a duplicate exists at index 1.
+- **Analysis:** Building the set forces a complete linear traversal with average `O(1)` insertions, so time is `O(n)`. A duplicate-free array requires storing all n elements, establishing an `O(n)` space ceiling. Unlike the seen-set, it  materializes the entire set before deciding, structurally eliminating the early-exit optimization. The system is forced into worst-case execution time and memory allocation even if a duplicate exists at index 1.
 
 **Hash seen-set with early exit**
 
 - **Mechanics:** Iterate the array, evaluating membership against a dynamically built Hash Set. Terminate execution and return `True` immediately upon a successful lookup.
-- **Complexity:** Time: `O(n)` average; Space: `O(n)` worst-case
-- **Analysis:** The "early exit" optimizes best-case time complexity to `O(1)` (if the duplicate is at index 1). Average time remains `O(n)` because evaluating a randomly distributed duplicate requires scanning an expected `n/2` elements, and evaluating a duplicate-free array requires scanning all n elements. Both scenarios scale linearly and mathematically reduce to `O(n)`.
+- **Complexity:** Time: `O(n)`; Space: `O(n)`
+- **Analysis:** A duplicate-free array forces a complete traversal, cementing the `O(n)` worst-case bound. The early-exit optimization achieves an `O(1)` best-case time whenever a duplicate is found within a constant number of steps. Average execution time remains `O(n)`, as the expected scan depth scales proportionally with the input size.
 
 **Selection**
 
@@ -77,8 +75,8 @@ Pattern: `seen-set`. Reusable note: `ref: dsa/patterns/hashing/seen_set`.
 
 **Complexity Verification**
 
-- **Time:** `O(n)` average. A single linear pass bounded by `O(1)` average hash operations.
-- **Space:** `O(n)` worst-case. The dynamically built set scales linearly only if all elements are distinct.
+- **Time:** `O(n)`. A single linear pass bounded by `O(1)` average hash operations.
+- **Space:** `O(n)`. The dynamically built set scales linearly only if all elements are distinct.
 
 ## 4. Follow-ups & Variations
 
