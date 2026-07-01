@@ -2,7 +2,7 @@
 
 in:  nums: list[int]   out: bool  -- True iff some value appears at least twice
 constraints: 0 <= len <= 10**5; -10**9 <= nums[i] <= 10**9
-empty -> False; negatives allowed; treat input as read-only
+len < 2 -> False; treat input as read-only
 approach: one pass, hash set of seen values, return True on the first repeat
 complexity: O(n) time (avg O(1) set ops), O(n) space
 """
