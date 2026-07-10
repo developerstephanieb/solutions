@@ -1,57 +1,50 @@
 # solutions
 
-Worked solutions to NeetCode/Leetcode problems. One problem per directory, three files
-each. This repo grows linearly with problems solved; it holds *instances*, not theory.
+> Worked NeetCode 150 solutions.
 
-## Relationship to the `ref` repo
+[![CI](https://github.com/developerstephanieb/solutions/actions/workflows/ci.yml/badge.svg)](https://github.com/developerstephanieb/solutions/actions/workflows/ci.yml)
 
-`ref` is a single uv-workspace monorepo (members `dsa`, `python`, ...) holding durable,
-conceptual material that grows slowly. This repo holds per-problem worked examples that
-grow with practice. They cross-link; they do not merge.
+## Categories
 
-- **`ref/dsa`** owns the *pattern* — e.g. the note on "hashing for a seen-set with early exit."
-- **solutions** owns the *instance* — e.g. *217 Contains Duplicate, solved*.
+| Category             | Pattern (in `ref/dsa`)          |
+| -------------------- | ------------------------------- |
+| `arrays_and_hashing` | `dsa/patterns/hashing/seen_set` |
 
-## Layout
+## How it's organized
 
-````
-solutions/
-├── pyproject.toml      
-├── docs/
-│   └── CONVENTIONS.md                  # Part A conventions + the per-problem template
-├── tools/
-│   └── anki_gen.py                     # builds one Anki TSV from every cards.md
-└── arrays_and_hashing/                 # category dirs are created on demand
-    └── 0217_contains_duplicate/        # <zero-padded LC number>_<snake_case slug>
-        ├── README.md                   # scope, approaches + trade-offs, testing strategy, ref/dsa link
-        ├── solution.py                 # implementations + inline `test_*` functions
-        └── cards.md                    # problem-oriented recall atoms
-````
+Each problem is a directory named `p<NNNN>_<slug>` (e.g. `p0217_contains_duplicate`), grouped
+by category. A problem is three files:
 
-Category directories follow the NeetCode 150 roadmap. The canonical taxonomy and naming rules live in
-`docs/CONVENTIONS.md`.
+| File          | Role                                                                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `README.md`   | Scoping (constraints, assumptions, edge cases), approaches with complexity and trade-offs, testing strategy, and the link up to `ref/dsa`. |
+| `solution.py` | The chosen optimal implementation plus inline `test_*` functions whose `assert`s pin its behavior; pytest collects them directly.          |
+| `cards.md`    | Spaced-repetition flashcards (`Q:` / `A:` / `TAGS:`) compiled into a per-domain Anki subdeck.                                              |
 
-## The three files
+## Quickstart
 
-- **`README.md`** — scoping (constraints, assumptions, edge cases), approaches with complexity
-  and trade-offs, testing strategy, and the link up to ref/dsa. `CONVENTIONS.md` Part B is the source of truth for the structure.
-- **`solution.py`** — the implementations (typically brute force *and* optimal), each
-  paired with `test_*` functions whose `assert`s pin the behavior. Pytest collects these
-  directly; see `pyproject.toml`.
-- **`cards.md`** — distilled Q/A recall atoms for Anki, tagged in a `solutions::` namespace
-  so this deck stays separate from the concept decks.
-
-## Quick start
-
-````
-uv sync                          # create the venv, install the dev group (mypy, pytest, ruff)
-uv run pytest                    # collect + run every test_* across all solution.py files
+```bash
+uv sync                          # create the .venv + install the dev group
+uv run ruff check --fix .        # lint (E, F, I, B, UP) + autofix
+uv run ruff format .             # format in place   (CI verifies with --check)
 uv run mypy .                    # strict type check
-uv run ruff check .              # lint (E, F, I, B, UP)
+uv run pytest                    # collect + run every test across all problems
 uv run tools/anki_gen.py         # build build/anki.tsv from every cards.md
-````
 
-## Conventions
+# run one problem's tests:
+uv run pytest arrays_and_hashing/p0217_contains_duplicate/
+```
 
-See `docs/CONVENTIONS.md` for the category taxonomy, directory/file naming, the per-problem
-template, the cross-reference format, and the card/tag conventions.
+Once per clone, install the git hooks so the fast gates run automatically on every commit:
+
+```bash
+uv run pre-commit install
+```
+
+## Quality gates
+
+Every push to `main` and every pull request runs four gates in CI: lint, format, type-check,
+and tests (`ruff check`, `ruff format --check`, `mypy`, `pytest`). The lint, format, and type
+gates also run locally on commit via `pre-commit`. The rules behind these gates live in
+[`docs/CONVENTIONS.md`](docs/CONVENTIONS.md); the reasoning is recorded in
+[`docs/adr/`](docs/adr/).
