@@ -114,8 +114,7 @@ def parse_file(path: Path, deck: str) -> list[Card]:
             continue
         card = parse_block(raw.strip())
         if card is not None:
-            cards.append(Card(card.front, card.back,
-                         card.tags, deck, str(path.parent)))
+            cards.append(Card(card.front, card.back, card.tags, deck, str(path.parent)))
     return cards
 
 
