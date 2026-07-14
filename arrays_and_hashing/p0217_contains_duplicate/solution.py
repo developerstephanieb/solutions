@@ -8,26 +8,33 @@ complexity: O(n) time (avg O(1) set ops), O(n) space
 """
 
 
-def seen_set(nums: list[int]) -> bool:
-    """Seen-set with early exit. O(n) time, O(n) space.
+def has_duplicate(nums: list[int]) -> bool:
+    """Return True if any value in nums appears at least twice.
 
-    Invariant: ``seen`` holds exactly the elements at indices before the
-    current one. If the current element is already in ``seen``, a duplicate
-    exists and we exit early.
+    Runs in O(n) time and O(n) space, with an O(1) best case when a duplicate
+    appears near the front. The time bound is average-case: it presumes a
+    non-adversarial hash distribution, since colliding keys degrade a set
+    lookup toward a linear scan. nums is not mutated.
+
+    Args:
+        nums: The integers to scan for a repeated value.
     """
     seen: set[int] = set()
-    for x in nums:
-        if x in seen:
+    # Invariant: seen holds exactly the elements at indices before the current
+    # one. A hit therefore means the value already appeared earlier, which is a
+    # duplicate, and the scan can exit without examining the rest.
+    for num in nums:
+        if num in seen:
             return True
-        seen.add(x)
+        seen.add(num)
     return False
 
 
-def test_seen_set() -> None:
-    assert seen_set([1, 2, 3, 1]) is True
-    assert seen_set([1, 2, 3, 4]) is False
-    assert seen_set([2, 2]) is True
-    assert seen_set([7, 7, 7]) is True
-    assert seen_set([-(10**9), 0, 10**9]) is False
-    assert seen_set([1]) is False
-    assert seen_set([]) is False
+def test_has_duplicate() -> None:
+    assert has_duplicate([1, 2, 3, 1]) is True
+    assert has_duplicate([1, 2, 3, 4]) is False
+    assert has_duplicate([2, 2]) is True
+    assert has_duplicate([7, 7, 7]) is True
+    assert has_duplicate([-(10**9), 0, 10**9]) is False
+    assert has_duplicate([]) is False
+    assert has_duplicate([1]) is False
