@@ -4,53 +4,54 @@
 
 ## 1. Requirements & Scoping
 
-**Problem:** Given an integer array `nums`, return `True` if any value appears at least twice,
-and `False` if every element is distinct.
+**Problem:** Given an integer array `nums`, return `True` if any value appears at least twice, and `False` if every element is distinct.
 
 **Signature:** `hasDuplicate(nums: list[int]) -> bool`
 
 **Clarifying questions**
 
-- *What is the maximum length of the array? Can it be empty or a single element, and if so should I return False or is empty out of contract?* — `0 <= len <= 10**5`; empty and singleton are valid, and with fewer than two elements no duplicate exists, so return False (not an error).
-- *What is the value range of the integers, and are negative values permitted?* — `-10**9 <= nums[i] <= 10**9`.
+- *What are the length bounds of the array?* — `0 <= len <= 10**5`. With fewer than two elements no duplicate can exist, which makes the answer `False`.
+- *What is the value range of the integers?* — `-10**9 <= nums[i] <= 10**9`.
 - *Am I permitted to mutate the input array, or should I treat it as read-only?* — Unspecified, so I'll treat it as read-only.
 
 **Assumptions**
 
-- **Memory bound (static vs streaming):** Assumes the system has sufficient RAM to allocate up to `O(n)` auxiliary space if an approach requires trading space for time.
-  - Degradation: Over an unbounded stream, exact `O(n)` deduplication fails via Out of Memory (OOM) exhaustion, requiring a pivot to bounded, probabilistic structures (e.g., Bloom Filter).
-- **Hashing environment (uniform vs. adversarial):** Assumes non-adversarial input with a uniform hash distribution, permitting average `O(1)` operations for hash-based structures.
-  - Degradation: Adversarial inputs can mathematically exploit the hash function to map massive amounts of data into the exact same memory bucket. Whether the underlying language resolves this via separate chaining (Linked Lists) or open addressing (exhaustive probe sequences like Python), the hardware is forced to linearly scan through every collided item. This degrades the `O(1)` lookup into an `O(n)` scan. 
+- **Memory bound (static, not streaming):** Assumes the system can allocate up to `O(n)` auxiliary space if an approach requires trading space for time.
+  - Degradation: Over an unbounded stream, exact deduplication needs space proportional to every distinct value ever seen, which exhausts memory. Pivot to bounded, probabilistic structures (e.g., Bloom Filter).
+- **Hashing environment (uniform, not adversarial):** Assumes non-adversarial input with a uniform hash distribution, permitting average-case `O(1)` set operations.
+  - Degradation: Adversarial inputs can exploit the hash function to map every key into the same memory bucket, which collapses a lookup from `O(1)` into a `O(n)` and the whole pass into `O(n^2)`.
+
+**Portability:** Values lie within `-10**9 <= nums[i] <= 10**9`, which sits inside `int32` (roughly ±2.15 billion). A C++ or Java port can therefore hold each element in a 32-bit `int` with no overflow surface. Python's `int` is arbitrary-precision, which removes the question from this implementation.
 
 ## 2. Algorithmic Design & Trade-offs
 
 **Brute force (pairwise comparison)**
 
--	**Mechanics:** Iterate through all possible pairs to check for equality.
+-	**Mechanics:** Compare every element against every later element, returning `True` on the first match.
 -	**Complexity:** Time: `O(n^2)`; Space: `O(1)`
--	**Analysis:** To check every pair without repeating, the first element is compared to `n-1` elements, the second to `n-2`, and so on. These comparisons form an arithmetic progression summing to $\frac{n(n-1)}{2}$, which simplifies to approximately $\frac{n^2}{2}$ pairs. At `n = 10**5`, the algorithm executes roughly $\frac{(10^5)^2}{2} = 5 \times 10^9$ (5 billion) operations. This guarantees a Time Limit Exceeded (TLE) error on standard hardware. Trivially correct but far too slow.
+-	**Analysis:** Comparing each element against every element after it sums to $\frac{n(n-1)}{2}$ pairs, which is roughly $\frac{n^2}{2}$. At the ceiling `n = 10**5` that is about $5 \times 10^9$ operations, which guarantees a Time Limit Exceeded. The approach is trivially correct and is the only candidate needing no auxiliary memory, but it is quadratic.
 
 **Sort and scan adjacent elements**
 
-- **Mechanics:** Sort the array to group duplicates adjacently, followed by a linear scan comparing `nums[i]` to `nums[i+1]`.
+- **Mechanics:** Sort the array so that equal values become adjacent, then scan once comparing `nums[i]` to `nums[i+1]`.
 - **Complexity:** Time: `O(n log n)`; Space: `O(n)`
 - **Analysis:** A comparison-based sort establishes an `O(n log n)` time bound. While an in-place sort (like Heapsort) could theoretically achieve `O(1)` space, the requirement to treat the input as read-only mandates an array copy, degrading space to `O(n)`. This renders the approach strictly inferior to Hashing for this specific constraint profile.
 
 **Set length**
 
-- **Mechanics:** Convert the entire array into a Hash Set and compare its length to the original array's length.
+- **Mechanics:** Convert the array into a Hash Set and compare its size against the array's length.
 - **Complexity:** Time: `O(n)`; Space: `O(n)`
-- **Analysis:** Building the set forces a complete linear traversal with average `O(1)` insertions, so time is `O(n)`. A duplicate-free array requires storing all n elements, establishing an `O(n)` space ceiling. Unlike the seen-set, it  materializes the entire set before deciding, structurally eliminating the early-exit optimization. The system is forced into worst-case execution time and memory allocation even if a duplicate exists at index 1.
+- **Analysis:** Building the set traverses the array once with average-case `O(1)` insertions, which is `O(n)` time, and a duplicate-free array retains all `n` elements, which fixes `O(n)` space. The approach is the shortest to write and reads as a single expression, but it materializes the entire set before deciding, which structurally forfeits an early exit.
 
-**Hash seen-set with early exit**
+**Hash seen-set with early exit (chosen)**
 
-- **Mechanics:** Iterate the array, evaluating membership against a dynamically built Hash Set. Terminate execution and return `True` immediately upon a successful lookup.
+- **Mechanics:** Traverse the array, testing each element for membership in a set of values already seen and inserting it when absent. Return `True` on the first hit.
 - **Complexity:** Time: `O(n)`; Space: `O(n)`
-- **Analysis:** A duplicate-free array forces a complete traversal, cementing the `O(n)` worst-case bound. The early-exit optimization achieves an `O(1)` best-case time whenever a duplicate is found within a constant number of steps. Average execution time remains `O(n)`, as the expected scan depth scales proportionally with the input size.
+- **Analysis:** A duplicate-free array forces a complete traversal and retains every element, which fixes `O(n)` for both time and space in the worst case. The early exit gives an `O(1)` best case whenever a duplicate appears within a constant number of steps.
 
 **Selection**
 
-The constraint `n = 10**5` forces a strict linear or log-linear time requirement, invalidating Brute Force. The immutability constraint nullifies the `O(1)` space advantage of the Sort and Scan approach. Between the two hashing strategies, the iterative Hash Set with early exit is selected over the Set Length approach. While both share the same worst-case complexity, the iterative approach leverages dynamic memory allocation and early termination, providing strictly superior time and space efficiency in the best and average execution paths.
+**Selection:** The ceiling `n = 10**5` forces a linear or log-linear bound, which invalidates brute force. The immutability constraint nullifies the `O(1)` space advantage of the sort and scan approach. The direct-address table is defeated by the value domain rather than by the algorithm. Between the two hash-based approaches, both share an `O(n)`/`O(n)` worst case, but the seen-set decides as soon as evidence appears, where the set-length approach must pay for the entire set before it can decide at all.
 
 Pattern: `seen-set`. Reusable note: `ref: dsa/patterns/hashing/seen_set`.
 
@@ -58,39 +59,40 @@ Pattern: `seen-set`. Reusable note: `ref: dsa/patterns/hashing/seen_set`.
 
 **Execution Steps**
 
-1. Initialize an empty, dynamically built Hash seen-Set.
-2. Iterate through each element in the input array.
-3. **Membership Check:** If the current element exists in the set, terminate execution and return `True`.
-4. **Insertion:** If the element is not found, insert it into the set and proceed to the next iteration.
-5. **Fallback:** If the loop exhausts with no successful lookups, return `False`.
+1. **Initialization:** Allocate an empty set to hold the values already seen.
+2. **Traversal:** Walk the array one element at a time.
+3. **Membership check:** If the current element is already in the set, a duplicate exists, and the answer is `True`.
+4. **Insertion:** Otherwise insert the element and continue.
+5. **Exhaustion:** If the traversal completes with no hit, every element was distinct, and the answer is `False`.
 
 **Test Vectors & Edge Cases**
 
-- **General Case:** `[1, 2, 3, 1] -> True` (Duplicate separated by distance).
-- **Distinct Elements:** `[1, 2, 3, 4] -> False` (Forces worst-case `O(n)` space and time).
-- **Immediate Duplicates:** `[2, 2] -> True` (Triggers `O(1)` best-case early exit).
-- **Uniform Array:** `[7, 7, 7] -> True` (Validates logic safely halts on multiple identical elements).
-- **Boundary Constraints:** `[-10**9, 0, 10**9] -> False` (Validates handling of extreme negative/positive constraint limits and zero).
-- **Guard Clauses:** `[] -> False`, `[1] -> False` (Empty and singleton arrays mathematically cannot contain pairs).
+- **General case:** `[1, 2, 3, 1] -> True` (duplicate separated by distance).
+- **Distinct elements:** `[1, 2, 3, 4] -> False` (forces the worst case in both time and space).
+- **Immediate duplicate:** `[2, 2] -> True` (triggers the `O(1)` best-case early exit).
+- **Uniform array:** `[7, 7, 7] -> True` (the scan halts on the first repeat, not the last).
+- **Boundary values:** `[-10**9, 0, 10**9] -> False` (the extremes of the value range, plus zero).
+- **Empty array:** `[] -> False` (fewer than two elements cannot form a pair).
+- **Singleton:** `[1] -> False` (fewer than two elements cannot form a pair).
 
 **Complexity Verification**
 
-- **Time:** `O(n)`. A single linear pass bounded by `O(1)` average hash operations.
-- **Space:** `O(n)`. The dynamically built set scales linearly only if all elements are distinct.
+- **Time:** `O(n)` — a single linear pass, with each membership test and insertion average-case `O(1)`.
+- **Space:** `O(n)` - the dynamically built set scales linearly only if all elements are distinct.
 
 ## 4. Follow-ups & Variations
 
-**Strict Memory Constraints (`O(1)` Space Limit):** The system cannot afford `O(n)` auxiliary space, but modifying the input array is permitted.
-- **Pivot:** Abandon the Hash Set. Utilize an in-place sort (e.g., Heapsort) followed by an adjacent element scan. This preserves `O(1)` space while intentionally degrading time complexity to `O(n log n)`.
+**Strict memory limit (`O(1)` auxiliary space), with mutation permitted:** The system cannot afford `O(n)` auxiliary space, but the input may be modified in place.
+- **Pivot:** Abandon the set. Sort in place with an algorithm that needs no auxiliary array, such as heapsort, then scan adjacent elements. This holds space at `O(1)` and deliberately trades time up to `O(n log n)`.
 
-**Unbounded Data Stream:** The input `nums` is an infinite stream rather than a static array (meaning $n \to \infty$).
-- **Pivot:** Exact deduplication requires space proportional to all distinct values seen, which mathematically guarantees an Out of Memory (OOM) crash. To maintain a strict memory ceiling, abandon the Hash Set for a Bloom Filter. This trades exactness for bounded space, yielding a manageable false-positive rate but mathematically guaranteeing zero false negatives.
+**Unbounded data stream:** The input arrives as an endless stream rather than a static array.
+- **Pivot:** Exact deduplication needs space proportional to every distinct value ever seen, which exhausts memory without bound. Substitute a Bloom filter, which enforces a fixed memory ceiling by trading exactness for a tunable false-positive rate while guaranteeing zero false negatives.
 
-**Information Extraction (Return the Value/Index):** The function must return the duplicate element itself (or its index) rather than a boolean.
-- **Pivot:** The iterative Hash Set natively supports this without architectural changes. Instead of returning `True` upon a successful membership check, return `nums[i]` or the index pointer `i`.
+**Return the value or index rather than a boolean:** The caller needs to know *which* element repeats.
+- **Pivot:** The seen-set supports this with no structural change. Return `nums[i]` or the index `i` at the point where the membership test currently returns `True`.
 
-**Bounded Index Proximity:** The duplicate must exist within a specific index distance `k`.
-- **Pivot:** Modify the Hash Set to operate as a sliding window. As the iteration pointer advances, delete elements from the set that fall outside the `current_index - k` boundary. This optimizes space complexity from `O(n)` down to `O(k)`.
+**Duplicate within index distance `k` (LC 219):** The repeat only counts if the two occurrences lie within `k` positions of each other.
+- **Pivot:** Convert the set into a sliding window. As the scan advances, evict the element that falls outside the `i - k` boundary, which bounds space at `O(k)` instead of `O(n)`.
 
-**Value & Index Proximity:** The duplicate must be within index distance `k` AND value difference `t`.
-- **Pivot:** A standard Hash Set becomes insufficient because we need to query ranges, not just exact matches. The architecture must pivot to an ordered structure (like a Balanced Binary Search Tree for `O(n log k)` time) or a Bucket Sort mechanism (for `O(n)` time) to efficiently evaluate the value differences.
+**Duplicate within index distance `k` and value difference `t` (LC 220):** The repeat must be near in both position and value.
+- **Pivot:** A hash set is insufficient, because the query becomes a range query rather than an exact match. Pivot to an ordered structure such as a balanced BST over the window, giving `O(n log k)`, or to bucketing by value width, giving `O(n)`.
