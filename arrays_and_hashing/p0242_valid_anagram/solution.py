@@ -31,9 +31,9 @@ def is_anagram(s: str, t: str) -> bool:
     # guard has already established it. A bare zip() would truncate to the
     # shorter input in silence, reporting ("a", "ab") as an anagram if the guard
     # were ever removed.
-    for cs, ct in zip(s, t, strict=True):
-        counts[ord(cs) - ord("a")] += 1
-        counts[ord(ct) - ord("a")] -= 1
+    for char_s, char_t in zip(s, t, strict=True):
+        counts[ord(char_s) - ord("a")] += 1
+        counts[ord(char_t) - ord("a")] -= 1
 
     return counts == [0] * 26
 
