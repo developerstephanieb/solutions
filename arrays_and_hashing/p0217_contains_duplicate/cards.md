@@ -1,5 +1,5 @@
 Q: Contains Duplicate (LC 217) — Given `0 <= len(nums) <= 10**5`, what complexity class does the ceiling permit, and why?
-A: `O(n log n)` or better. At `n = 10**5` a linear pass runs `10**5` operations and a log-linear pass roughly `10**5 * log2(10**5) ≈ 1.7 * 10**6`, both trivially affordable. A quadratic pass runs `(10**5)**2 = 10**10`, nearly four orders of magnitude larger and beyond what any time limit absorbs.
+A: `O(n log n)` or better. At `n = 10**5` a linear pass runs `10**5` operations and a log-linear pass `10**5 * log2(10**5) ≈ 1.7 * 10**6`, both trivially affordable. A quadratic pass runs `(10**5)**2 = 10**10`, nearly four orders of magnitude larger and beyond what any time limit absorbs.
 TAGS: solutions::arrays_and_hashing::217 slot::constraints
 ---
 Q: Contains Duplicate (LC 217) — With `n` bounded at `10**5`, what is the brute-force approach, its complexity, and its verdict?
@@ -11,10 +11,10 @@ A: A seen-set with early exit. Walk the array holding the values already seen in
 TAGS: solutions::arrays_and_hashing::217 slot::optimal pattern::seen_set
 ---
 Q: Contains Duplicate (LC 217) — The seen-set's `O(n)` time bound rests on what unstated assumption?
-A: That membership is average-case `O(1)` and insertion is amortized average-case `O(1)`, where the insert amortizes the set's occasional resize. Hashability itself is a given, carried by the `int` type; the assumption is the average-case cost. Adversarial input can force every key into one bucket, which collapses a single operation to `O(n)` and the whole pass to `O(n^2)`.
+A: That lookups are average-case `O(1)` and insertions amortized average-case `O(1)`, where the amortization covers the table's occasional resize. The premise is a hash function distributing keys evenly. Adversarial input can force every key onto the same slot, which collapses a single operation to `O(n)`. The loop performs one such operation for each of the `n` elements, which compounds the whole pass to `O(n^2)`.
 TAGS: solutions::arrays_and_hashing::217 slot::assumption pattern::seen_set
 ---
-Q: Contains Duplicate (LC 217) — Given `0 <= len(nums) <= 10**5`, `-10**9 <= nums[i] <= 10**9`, and a read-only array, walk the full elimination across all five candidates.
+Q: Contains Duplicate (LC 217) — Given `0 <= len(nums) <= 10**5`, `-10**9 <= nums[i] <= 10**9`, and a read-only array, walk the full elimination across all candidates.
 A: 1. The ceiling permits `O(n log n)` or better, which invalidates the `O(n^2)` brute force approach. 2. Sort-and-scan reaches `O(n log n)`, but the read-only constraint forces an `O(n)` copy, stripping the space advantage it has over hashing. 3. Direct addressing gives worst-case `O(1)` access, but the value domain forces an array of `m = 2 * 10**9 + 1` slots that must be zeroed before use, incurring a `Θ(m)` cost in both time and auxiliary space that shifts the overall time complexity to `O(n + m)` and guarantees a Memory Limit Exceeded at allocation. 4-5. Set-length and the seen-set share an `O(n)`/`O(n)` worst-case but seen-set wins because it decides on the first repeat, whereas set-length materializes the entire set before it can decide at all.
 TAGS: solutions::arrays_and_hashing::217 slot::selection pattern::seen_set
 ---

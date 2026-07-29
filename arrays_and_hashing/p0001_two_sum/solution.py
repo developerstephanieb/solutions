@@ -6,18 +6,18 @@ constraints: 2 <= len(nums) <= 1000; -10**7 <= nums[k], target <= 10**7
 exactly one pair (i != j); complement checked before insert, earlier index first
 approach: one pass hash map (value -> index), lookup complement before insert,
     return the pair on first complement hit
-complexity: O(n) time (avg O(1) map ops), O(n) space
+complexity: O(n) time (avg-case O(1) lookup, amortized avg-case O(1) insert), O(n) space
 """
 
 
 def two_sum(nums: list[int], target: int) -> list[int]:
-    """Return the indices of the distinct two integers that sum to the target.
+    """Return the indices of the two values that sum to target, smaller index first.
 
     Assumes exactly one such pair exists. A single linear pass maps each previously
-    seen value to its index, which bounds both time and space at O(n) on average,
-    given non-adversarial hashing. Looking up the complement before inserting the
-    current value prevents an element from matching itself and yields the earlier
-    index first, so the smaller-index-first order falls out with no sort.
+    seen value to its index, which bounds space at O(n) and average-case time at
+    O(n). Checking for the complement before inserting the current value prevents an
+    element from pairing with itself. The same ordering yields the smaller index
+    first, which removes any need to sort.
 
     Args:
         nums: The integers to search.
@@ -29,8 +29,8 @@ def two_sum(nums: list[int], target: int) -> list[int]:
     seen: dict[int, int] = {}
     for i, num in enumerate(nums):
         complement = target - num
-        # seen maps each value at an index < i to that index, so a hit is a
-        # distinct earlier element, never num itself.
+        # Invariant: seen holds only values from indices before i.
+        # A hit is therefore a distinct earlier element, never num itself.
         if complement in seen:
             return [seen[complement], i]
         seen[num] = i

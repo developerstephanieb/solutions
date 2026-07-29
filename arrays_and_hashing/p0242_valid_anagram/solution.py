@@ -1,6 +1,7 @@
 """LC 242. Valid Anagram.
 
-in:  s: str, t: str   out: bool  -- True iff t is a permutation of s
+in:  s: str, t: str
+out: bool  -- True iff t is a permutation of s
 constraints: 1 <= len(s), len(t) <= 5 * 10**4; s, t lowercase English letters
 len(s) != len(t) -> False; the fixed domain permits a 26-slot direct-address table
 approach: tally s (+1) and t (-1) over a 26-slot array; accept iff every slot is zero
@@ -11,20 +12,22 @@ complexity: O(n) time, O(1) space (fixed-width tally, direct-addressed)
 def is_anagram(s: str, t: str) -> bool:
     """Return True if t is a permutation of s.
 
-    Both strings must contain only lowercase English letters. Characters
-    outside that range are not validated. Python resolves negative indices as
-    offsets from the end of the list, which lets an out-of-range character
-    alias onto a valid slot and corrupt the tally silently rather than raising.
+    Runs in O(n) time over a single paired pass, and O(1) space since the
+    tally is a fixed 26-slot array whose width never grows with the input. Both
+    strings must contain only lowercase English letters. Characters outside that
+    range are not validated.
 
-    Complexity: O(n) time, O(1) space.
+    Args:
+        s: A string of lowercase English letters.
+        t: A string of lowercase English letters.
     """
     if len(s) != len(t):
         return False
 
     counts = [0] * 26
-    # Invariant: after k paired steps, counts[i] holds the occurrences of letter
+    # After k paired steps, counts[i] holds the occurrences of letter
     # i in s[:k] minus its occurrences in t[:k]. Equal lengths make the tallies
-    # balance if and only if the two multisets of letters are equal, which makes
+    # balance iff the two multisets of letters are equal, which makes
     # an all-zero table exactly the anagram condition.
     #
     # strict= records that equal-length invariant. It cannot fire, because the

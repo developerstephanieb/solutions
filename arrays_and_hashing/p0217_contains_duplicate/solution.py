@@ -2,7 +2,7 @@
 
 in:  nums: list[int]
 out: bool  -- True iff some value appears at least twice
-constraints: 0 <= len <= 10**5; -10**9 <= nums[i] <= 10**9
+constraints: 0 <= len(nums) <= 10**5; -10**9 <= nums[i] <= 10**9
     len < 2 -> False; treat input as read-only
 approach: one pass, hash set of seen values, return True on the first repeat
 complexity: O(n) time (avg-case O(1) lookup, amortized O(1) add), O(n) space
@@ -20,7 +20,7 @@ def has_duplicate(nums: list[int]) -> bool:
         nums: The integers to scan for a repeated value.
     """
     seen: set[int] = set()
-    # seen holds exactly the values at indices before the current
+    # invariant: seen holds exactly the values at indices before the current
     # one. A hit therefore means the value already appeared earlier, which is a
     # duplicate, and the scan can exit without examining the rest.
     for num in nums:
