@@ -21,7 +21,8 @@ def is_anagram(s: str, t: str) -> bool:
         return False
 
     counts = [0] * 26
-    # invariant: after k paired steps, counts[i] is i's count in s[:k] minus in t[:k].
+    # invariant: at the start of iteration i, each entry stores the character
+    # frequency difference between prefixes `s[:i]` and `t[:i]`
     for char_s, char_t in zip(s, t, strict=True):
         counts[ord(char_s) - ord("a")] += 1
         counts[ord(char_t) - ord("a")] -= 1

@@ -1,11 +1,11 @@
 Q: Two Sum (LC 1) — With `n` bounded at `1000`, what is the brute-force approach, its complexity, and its verdict?
-A: For each index `i`, scan the remaining subarray from `i + 1` to `n - 1` testing whether `nums[i] + nums[j]` equals the target. Time `O(n^2)`, space `O(1)`. The comparisons sum to `n(n-1) / 2`, roughly `5 * 10**5` at the ceiling, well inside any time limit. The verdict is dominated rather than excluded: it is the only candidate needing no auxiliary memory, and it loses on asymptotics alone.
+A: A nested loop evaluating every unique pair for the target sum. Time `O(n^2)`, space `O(1)`. Operationally viable under the ceiling, peaking at roughly `5 * 10**5` operations, but asymptotically suboptimal.
 TAGS: solutions::arrays_and_hashing::1 slot::brute_force
 ---
 Q: Two Sum (LC 1) — What does the brute force waste, and what pattern does that force?
-A: The scan tests each later element in turn without ever computing what it is looking for, and it discards everything it learned the moment `i` advances. The partner is derivable — `target - nums[i]` — which turns finding the pair into asking whether a single value is present rather than searching for a match, and calls for a map from value to index: the `complement-map`.
+A: The inner loop scans for a complement that can be calculated (`target - nums[i]`), which calls for a `complement-map`.
 TAGS: solutions::arrays_and_hashing::1 slot::pattern pattern::complement_map
 ---
-Q: Two Sum (LC 1) — What is the chosen approach, what invariant makes it correct, and what is its complexity?
-A: A one-pass complement map. For each element compute its complement `target - nums[i]`, and return `[seen[complement], i]` when the complement is already in the map. Otherwise insert `nums[i] -> i` and continue. The invariant is that `seen` holds only values from indices strictly before `i`. Any hit is therefore a distinct earlier element, which prevents self-pairing and resolves duplicate values like `[3, 3]` to two distinct indices. The stored index is also inherently smaller than `i`, satisfying the smaller-index-first requirement without additional sorting. Building the map in full first would break the invariant and require an explicit `i != j` guard in its place. `O(n)` time and `O(n)` space.
+Q: Two Sum (LC 1) — What is the objective, chosen approach, what invariant makes it correct, and what is its complexity?
+A: To optimize time to `O(n)`, trade auxiliary space for a single forward pass that looks up each element's complement before inserting the element itself. At the start of any iteration `i`, the map holds `nums[:i]` keyed to their indices, which guarantees any hit is a distinct earlier element, preventing self-pairing and resolving duplicate values to two distinct indices. The stored index is also smaller than `i`, which satisfies the smaller-index-first requirement. Average-case `O(n)` time with an `O(1)` best case, space `O(n)`.
 TAGS: solutions::arrays_and_hashing::1 slot::optimal pattern::complement_map

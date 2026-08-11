@@ -14,7 +14,7 @@ def has_duplicate(nums: list[int]) -> bool:
         nums: The integers to scan for a repeated value.
     """
     seen: set[int] = set()
-    # invariant: seen holds exactly the values at indices before the current
+    # invariant: at the start of iteration i, seen holds exactly the values in nums[:i]
     for num in nums:
         if num in seen:
             return True

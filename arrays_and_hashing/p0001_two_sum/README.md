@@ -27,36 +27,38 @@ At $n = 1000$, a quadratic pass runs $10^6$ operations, which is trivially affor
 
 ## 2. Algorithmic Design & Trade-offs
 
-**Brute-force nested scan**
+**Brute-force**: A nested loop evaluating every unique pair for the target sum.
 
-- **Mechanics:** For each index `i`, scan the remaining subarray from `i + 1` to `n - 1` testing whether `nums[i] + nums[j] == target`.
-- **Complexity:** Time: `O(n^2)`; Space: `O(1)`.
-- **Analysis:** Re-evaluating the shrinking subarray for every element forces a quadratic `O(n^2)` time bound. The comparisons sum to $\frac{n(n-1)}{2}$, which at the ceiling $n = 1000$ equates to roughly $5 \times 10^5$ operations, well inside any time limit. Because it allocates no auxiliary structure, it establishes an `O(1)` space floor. This approach is therefore dominated rather than excluded. 
-- **Pattern:** `complement-map`. The inner scan searches for `target - nums[i]`, a value the outer loop has already computed, and discards what it learned the moment `i` advances. A search for a value you already hold is a lookup, which calls for a map from value to index.
+- **Mechanics:** An outer pointer establishes a pivot index `i`, while an inner pointer `j` traverses the linearly shrinking subarray from `i + 1` to the end of the array.
+- **Complexity:** The traversal yields $\frac{n(n-1)}{2}$ pair-wise comparisons, establishing an `O(n^2)` time bound. Execution is entirely in-place, yielding `O(1)` space.
+- **Pattern:** `complement-map`. The inner loop scans for a complement that can be calculated (`target - nums[i]`).
+- **Analysis:** Viable under the ceiling at roughly $5 \times 10^5$ operations, but asymptotically suboptimal. Trading `O(n)` auxiliary space for a hash map reduces the search to an `O(1)` average-case lookup, lowering the time bound to `O(n)`.
 
-**Sort-plus-two-pointers**
+**Sort-plus-two-pointers:** A converging two-pointer sweep over a sorted copy that carries the value-index pairs.
 
-- **Mechanics:** Materialize a new array of `(value, original_index)` tuples and sort by value. Initialize pointers at both boundaries and converge them inward dynamically: increment the left pointer to increase the sum, or decrement the right pointer to decrease the sum, until the target is matched.
-- **Complexity:** Time: `O(n log n)`; Space: `O(n)`.
-- **Analysis:** Comparison-based sorting locks time at `O(n log n)`. While a standard two-pointer sweep maintains `O(1)` space, returning indices forces the creation of an auxiliary tuple array to preserve the original indices during the sort, which degrades space to `O(n)`, eliminating the space advantage this approach would otherwise offer on a value-only problem.
+- **Mechanics:** Materialize an array of `(value, original_index)` tuples and sort by value. Initialize pointers at both boundaries and converge them while `left < right`: increment the left pointer to increase the sum, or decrement the right pointer to decrease the sum, until the target is matched.
+- **Complexity:** Comparison-based sorting locks time at `O(n log n)`. Space complexity is `O(n)` due to the allocation of the auxiliary structure.
+- **Analysis:** Returning indices forces the creation of an auxiliary tuple array to preserve the original positions during the sort, eliminating the `O(1)` advantage this approach would offer on a value-only problem. 
 
-**One-pass complement map (chosen)**
+**One-pass complement-map (chosen):** A single forward pass that looks up each element's complement before inserting the element itself.
 
-- **Mechanics:** Execute a single forward traversal. For each element, compute its complement `target - nums[i]` and return `[seen[complement], i]` when the complement is already in the map. Otherwise, insert `nums[i] -> i` and continue.
-- **Complexity:** Time: `O(n)`; Space: `O(n)`.
-- **Analysis:** A single traversal paired with average-case `O(1)` hash lookups bounds the overall execution to `O(n)`, with each insert amortized `O(1)`. Supporting the map requires dynamic allocation, which scales space to `O(n)` and carries the collision exposure established in §1.
+- **Mechanics:** Initialize a hash map to store `(value, index)` mappings. Iterate a pointer `i` through the array, calculating the complement (`target - nums[i]`). If the complement exists in the map, return the paired indices. Otherwise, insert the current value and index into the map and continue.
+- **Complexity:** A single traversal paired with average-case `O(1)` hash lookups bounds the overall execution to `O(n)`. Supporting the map requires dynamic allocation, which scales space to `O(n)`.
+- **Invariant**: At the start of any iteration `i`, the map holds `nums[:i]` keyed to their indices, which guarantees any hit is a distinct earlier element, preventing self-pairing and resolving duplicate values to two distinct indices. The stored index is also smaller than `i`, which satisfies the smaller-index-first requirement. Building the map in full before querying it would break the invariant and require an explicit `i != j` guard in its place.
+- **Analysis:** Asymptotically optimal at `O(n)` time. The `O(n)` auxiliary space is the price of the `O(1)` lookup, and the only property surrendered is the in-place execution brute force keeps.
 
-**Selection:** The constraint ceiling is loose enough to admit every candidate, which moves the decision onto asymptotics and the index contract. Brute force is the only candidate needing no auxiliary memory, but it is the slowest. Sort-plus-two-pointers is log-linear and still needs `O(n)` space since preserving the original indices forces a `(value, index)` tuple array. The one-pass map is alone in reaching `O(n)` time while enforcing the distinct-index and ordering contracts structurally rather than through a guard.
-
-**Invariant:** `seen` holds only values from indices strictly before `i`. Any hit is therefore a distinct earlier element, which prevents an element from pairing with itself and resolves duplicate values like `[3, 3]` to two distinct indices. The stored index is also necessarily smaller than `i`, which satisfies the smaller-index-first requirement without additional sorting. Building the map in full before querying it would break the invariant and require an explicit `i != j` guard in its place.
+**Selection:** The one-pass complement-map, alone in reaching `O(n)` time and satisfying the distinct-index and ordering contracts structurally rather than through a guard.
 
 ## 3. Follow-ups & Variations
 
-**Value-only return:** Contract drops the requirement to map elements back to their original indices. 
-- **Pivot:** Return `[complement, num]` at the match, which removes the need for the `(value, index)` tuple array and makes sort-plus-two-pointers competitive again. With mutation permitted, sorting in place with an algorithm that needs no auxiliary array, such as heapsort, then sweeping two pointers inward gives `O(n log n)` time at `O(1)` space. Under a read-only array the sort still needs an `O(n)` copy, which leaves the complement map ahead on time at equal space.
+**Value-only return, with mutation permitted:** The contract requires the integers themselves rather than their original indices, and the input may be modified in place.
 
-**All distinct pairs summing to target:** The caller requires every valid pair rather than the first match. 
-- **Pivot:** Early termination is no longer available, which calls for sort-plus-two-pointers over the whole array. Sorting groups equal values adjacently, which means an ordinary pointer step can land on the same value and record the same pair twice. Skip the repeats by advancing before comparing: `left += 1`, followed by `while left < right and nums[left] == nums[left - 1]: left += 1`. Advancing first keeps `left - 1` non-negative, and the `left < right` bound keeps the skip from running past the opposing pointer.
+- **Pivot:** An in-place sort replaces the map. Sort with an algorithm needing no auxiliary array, such as heapsort, then converge two pointers and return the pair of values. Time regresses to `O(n log n)` and space falls to `O(1)`.
 
-**No solution guaranteed:** A valid pair is no longer guaranteed to exist?
-- **Pivot:** The `-> list[int]` return type cannot be honoured on a miss. Widen the signature to `list[int] | None` and return `None` if no match is found. Under the original guarantee, reaching the end of the loop without a result meant the input was invalid, which justified a `ValueError`. A miss is now an expected outcome, which requires a `None` return rather than an exception.
+**All distinct pairs summing to target:** The caller requires every distinct pair rather than the first match.
+
+- **Pivot:** No structural change; the map extends. The termination condition shifts from an early exit to an exhaustive traversal, and upon identifying a valid complement the two values are normalized into a `(min, max)` tuple and inserted into a secondary result set, which deduplicates identical pairs at average-case `O(1)` per insertion. Time stays average-case `O(n)` and space `O(n)` across both structures.
+
+**No solution guaranteed:** The input array may lack a valid complement pair.
+
+- **Pivot:** No structural change; the return contract widens. Widen the signature to `list[int] | None`. Under the original guarantee, reaching the end of the loop without a result meant the input was invalid, which justified a `ValueError`. A miss is now an expected outcome, which requires a `None` return rather than an exception.
