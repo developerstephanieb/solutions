@@ -23,7 +23,8 @@ def two_sum(nums: list[int], target: int) -> list[int]:
     seen: dict[int, int] = {}
     for i, num in enumerate(nums):
         complement = target - num
-        # invariant: seen holds only values from indices before i
+        # invariant: seen stores nums[:i], preventing self-pairing and
+        # guaranteeing complement_index < i
         if complement in seen:
             return [seen[complement], i]
         seen[num] = i
